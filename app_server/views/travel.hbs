@@ -15,15 +15,25 @@
 					<div>
 						<div class="body">
 							<h1>Travel</h1>
+
 							<ul id="sites">
                                 {{#each trips}}
                                     <li>
-                                        <a href="/travel"><img src="images/{{this.image}}" alt="Img"></a>
-                                        <h2><a href="/travel">{{this.name}}</a></h2>
+
+                                        {{!-- Original image link --}}
+                                        {{!-- <a href="/travel"><img src="images/{{this.image}}" alt="Img"></a> --}}
+                                        <a href="/travel/{{this.code}}"><img src="images/{{this.image}}" alt="Img"></a>
+
+                                        {{!-- Original title link --}}
+                                        {{!-- <h2><a href="/travel">{{this.name}}</a></h2> --}}
+                                        <h2><a href="/travel/{{this.code}}">{{this.name}}</a></h2>
+
+
                                         {{{this.description}}}
                                     </li>
                                 {{/each}}
                             </ul>
+
                         </div>
                     </div>
                 </div>
