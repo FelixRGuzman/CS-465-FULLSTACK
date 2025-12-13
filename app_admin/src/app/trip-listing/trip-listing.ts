@@ -1,19 +1,8 @@
-/*
-import { Component } from '@angular/core';
-
-@Component({
-  selector: 'app-trip-listing',
-  imports: [],
-  templateUrl: './trip-listing.html',
-  styleUrl: './trip-listing.css',
-})
-export class TripListing {
-
-}*/
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { trips } from '../data/trips';
+
+import { Trip } from '../models/trip';
+import { TripDataService } from '../services/trip-data';
 import { TripCard } from '../trip-card/trip-card';
 
 @Component({
@@ -21,14 +10,38 @@ import { TripCard } from '../trip-card/trip-card';
   standalone: true,
   imports: [CommonModule, TripCard],
   templateUrl: './trip-listing.html',
-  styleUrl: './trip-listing.css'
+  styleUrl: './trip-listing.css',
+  providers: [TripDataService]
 })
-
 export class TripListing implements OnInit {
-  trips: Array<any> = trips;
+  trips!: Trip[];
+  message: string = '';
 
-  constructor() {}
+  constructor(private tripDataService: TripDataService) {
+    console.log('trip-listing constructor');
+  }
 
-  ngOnInit(): void {}
+  private getStuff(): void {
+    this.tripDataService.getTrips().subscribe({
+      next: (value: Trip[]) => {
+        this.trips = value;
+
+        if (value.length > 0) {
+          this.message = 'There are ' + value.length + ' trips available.';
+        } else {
+          this.message = 'There were no trips retrieved from the database';
+        }
+
+        console.log(this.message);
+      },
+      error: (error: any) => {
+        console.log('Error: ' + error);
+      }
+    });
+  }
+
+  ngOnInit(): void {
+    console.log('ngOnInit');
+    this.getStuff();
+  }
 }
-
