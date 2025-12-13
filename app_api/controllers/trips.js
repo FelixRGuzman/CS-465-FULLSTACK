@@ -42,8 +42,37 @@ const tripsFindByCode = async (req, res) =>{
     }
 };
 
+// POST: /trips - Adds a new Trip
+// Regardless of outcome must include HTML status code & JSON message requesting client.
+const tripsAddTrip = async (req, res) => { 
+    const newTrip = new Trip({ 
+        code: req.body.code,
+        name: req.body.name,
+        length: req.body.length,
+        start: req.body.start,
+        resort: req.body.resort,
+        perPerson: req.body.perPerson,
+        image: req.body.image,
+        description: req.body.description
+    });
+
+    try {
+        const q = await newTrip.save(); 
+
+        return res
+            .status(201)
+            .json(q);
+    } catch (err) {
+
+        return res
+            .status(400)
+            .json(err);
+    }
+};
+
 module.exports = { 
     tripsList,
-    tripsFindByCode
+    tripsFindByCode,
+    tripsAddTrip
 };
 

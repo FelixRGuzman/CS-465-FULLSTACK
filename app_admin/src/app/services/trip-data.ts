@@ -8,13 +8,15 @@ import { Trip } from '../models/trip';
 })
 export class TripDataService {
 
-
+  private url = 'http://localhost:3000/api/';
   constructor(private http: HttpClient) {}
   
 
   getTrips(): Observable<Trip[]> {
-     let url = 'http://localhost:3000/api/trips';
-     
-    return this.http.get<Trip[]>(url)
+    return this.http.get<Trip[]>(`${this.url}trips`);
+  }
+
+  addTrip(formData: Trip) : Observable<Trip> {
+    return this.http.post<Trip>(`${this.url}trips`, formData);
   }
 }
