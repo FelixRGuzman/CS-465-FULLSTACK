@@ -38,13 +38,14 @@ export class TripListing implements OnInit {
 }
 */
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 import { Trip } from '../models/trip';
 import { TripDataService } from '../services/trip-data';
 import { TripCard } from '../trip-card/trip-card';
-import { trips } from '../data/trips';
+import { trips } from '../data/trips'; 
 
 import { Router } from '@angular/router';
 
@@ -56,19 +57,22 @@ import { Router } from '@angular/router';
   styleUrl: './trip-listing.css',
   providers: [TripDataService]
 })
-export class TripListing implements OnInit {
-  trips: Array<any> = trips;
+export class TripListing implements OnInit, OnDestroy {
+  trips: Array<any> = trips; // regular method didn't work so I came up with a different working solution.
   message: string = '';
   
+  private tripUpdateSubscription!: Subscription;
 
-  /*
-
-  trips!: Trip[]; THIS DOESNT WORK NO MATTER HOW HARD I TRY?!?!
-
-  */
-
-  constructor(private tripDataService: TripDataService, private router: Router) {
+  constructor(
+    private tripDataService: TripDataService, 
+    private router: Router,
+    private cd: ChangeDetectorRef 
+  ) {
     console.log('trip-listing constructor');
+
+    this.tripUpdateSubscription = this.tripDataService.tripListUpdated$.subscribe(() => {
+      this.getStuff(); // Reload data when the signal is received
+    });
   }
 
   public addTrip(): void{
@@ -78,7 +82,7 @@ export class TripListing implements OnInit {
   private getStuff(): void {
     this.tripDataService.getTrips().subscribe({
       next: (value: Trip[]) => {
-      //  this.trips = value;
+        this.trips = value;
 
         if (value.length > 0) {
           this.message = 'There are ' + value.length + ' trips available.';
@@ -86,6 +90,8 @@ export class TripListing implements OnInit {
           this.message = 'There were no trips retrieved from the database';
         }
 
+        this.cd.detectChanges(); // THIS FIXED IT! 10 HOURS OF DEBUGGING FINALLY!!!!!!
+        
         console.log(this.message);
       },
       error: (error: any) => {
@@ -96,6 +102,12 @@ export class TripListing implements OnInit {
 
   ngOnInit(): void {
     console.log('ngOnInit');
-    this.getStuff();
+    this.getStuff(); 
+  }
+
+  ngOnDestroy(): void {
+    if (this.tripUpdateSubscription) {
+      this.tripUpdateSubscription.unsubscribe();
+    }
   }
 }

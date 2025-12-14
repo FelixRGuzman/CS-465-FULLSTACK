@@ -51,10 +51,16 @@ export class EditTrip implements OnInit {
     this.tripDataService.getTrip(tripCode)
       .subscribe({
         next: (value: any) => {
-          this.trip = value;
-          this.editForm.patchValue(value[0]); 
           
-          if(!value) {
+          const tripData = Array.isArray(value) ? value[0] : value;
+          this.trip = tripData;
+          
+          if (tripData && tripData.start) {
+            tripData.start = new Date(tripData.start).toISOString().split('T')[0];
+          }
+          this.editForm.patchValue(tripData); 
+          
+          if(!tripData) {
             this.message = 'No Trip Retrieved!';
           } else {
             this.message = 'Trip: ' + tripCode + ' retrieved';
@@ -74,8 +80,11 @@ export class EditTrip implements OnInit {
         .subscribe({
           next: (value: any) => {
             console.log(value);
-            //this.router.navigate(['']); 
-            this.router.navigate(['list']); // front end fix WIP
+            
+           // Signal to the TripListing component to refresh forcibly
+            this.tripDataService.notifyTripListUpdate(); 
+            
+            this.router.navigate(['']); 
           },
           error: (error: any) => {
             console.log('Error: ' + error);

@@ -22,7 +22,6 @@ const tripsList = async (req, res) =>{
             .status(404)
             .json(err);
     } else { // Return resulting trip list return res
-        // .status(200) DEPRECATED
         return res.status(200).json(q); // FIX
     }
 };
@@ -91,7 +90,7 @@ const q = await Model
         image: req.body.image,
         description: req.body.description
     },
-    { new: true } // <--- CRITICAL FIX: Tells Mongoose to return the UPDATED document
+    { new: true } 
 )
 .exec();
 
