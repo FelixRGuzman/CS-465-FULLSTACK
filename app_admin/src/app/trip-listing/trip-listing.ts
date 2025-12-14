@@ -63,7 +63,7 @@ export class TripListing implements OnInit {
 
   /*
 
-  trips!: Trip[]; THIS DOESNT WORK NO MATTER HOW HARD I TRY
+  trips!: Trip[]; THIS DOESNT WORK NO MATTER HOW HARD I TRY?!?!
 
   */
 
@@ -78,7 +78,7 @@ export class TripListing implements OnInit {
   private getStuff(): void {
     this.tripDataService.getTrips().subscribe({
       next: (value: Trip[]) => {
-        this.trips = value;
+      //  this.trips = value;
 
         if (value.length > 0) {
           this.message = 'There are ' + value.length + ' trips available.';
