@@ -45,69 +45,76 @@ import { Subscription } from 'rxjs';
 import { Trip } from '../models/trip';
 import { TripDataService } from '../services/trip-data';
 import { TripCard } from '../trip-card/trip-card';
-import { trips } from '../data/trips'; 
+import { trips } from '../data/trips';
 
 import { Router } from '@angular/router';
+import { AuthenticationService } from '../services/authentication'; // NEW IMPORT
 
 @Component({
-  selector: 'app-trip-listing',
-  standalone: true,
-  imports: [CommonModule, TripCard],
-  templateUrl: './trip-listing.html',
-  styleUrl: './trip-listing.css',
-  providers: [TripDataService]
+ selector: 'app-trip-listing',
+ standalone: true,
+ imports: [CommonModule, TripCard],
+ templateUrl: './trip-listing.html',
+ styleUrl: './trip-listing.css',
+ providers: [TripDataService]
 })
 export class TripListing implements OnInit, OnDestroy {
-  trips: Array<any> = trips; // regular method didn't work so I came up with a different working solution.
-  message: string = '';
-  
-  private tripUpdateSubscription!: Subscription;
+ trips: Array<any> = trips; // regular method didn't work so I came up with a different working solution.
+ message: string = '';
 
-  constructor(
-    private tripDataService: TripDataService, 
-    private router: Router,
-    private cd: ChangeDetectorRef 
-  ) {
-    console.log('trip-listing constructor');
+ private tripUpdateSubscription!: Subscription;
 
-    this.tripUpdateSubscription = this.tripDataService.tripListUpdated$.subscribe(() => {
-      this.getStuff(); // Reload data when the signal is received
-    });
+ constructor(
+ private tripDataService: TripDataService,
+ private router: Router,
+ private cd: ChangeDetectorRef,
+    private authenticationService: AuthenticationService // NEW INJECTION
+ ) {
+ console.log('trip-listing constructor');
+
+ this.tripUpdateSubscription = this.tripDataService.tripListUpdated$.subscribe(() => {
+ this.getStuff(); // Reload data when the signal is received
+ });
+ }
+
+ public addTrip(): void{
+ this.router.navigate(['add-trip']);
+ }
+
+  // NEW METHOD to check login status
+  public isLoggedIn() {
+    return this.authenticationService.isLoggedIn();
   }
 
-  public addTrip(): void{
-    this.router.navigate(['add-trip']);
-  }
+ private getStuff(): void {
+ this.tripDataService.getTrips().subscribe({
+ next: (value: Trip[]) => {
+ this.trips = value;
 
-  private getStuff(): void {
-    this.tripDataService.getTrips().subscribe({
-      next: (value: Trip[]) => {
-        this.trips = value;
+ if (value.length > 0) {
+ this.message = 'There are ' + value.length + ' trips available.';
+ } else {
+ this.message = 'There were no trips retrieved from the database';
+ }
 
-        if (value.length > 0) {
-          this.message = 'There are ' + value.length + ' trips available.';
-        } else {
-          this.message = 'There were no trips retrieved from the database';
-        }
+ this.cd.detectChanges(); // THIS FIXED IT! 10 HOURS OF DEBUGGING FINALLY!!!!!!
 
-        this.cd.detectChanges(); // THIS FIXED IT! 10 HOURS OF DEBUGGING FINALLY!!!!!!
-        
-        console.log(this.message);
-      },
-      error: (error: any) => {
-        console.log('Error: ' + error);
-      }
-    });
-  }
+ console.log(this.message);
+ },
+ error: (error: any) => {
+ console.log('Error: ' + error);
+ }
+ });
+ }
 
-  ngOnInit(): void {
-    console.log('ngOnInit');
-    this.getStuff(); 
-  }
+ ngOnInit(): void {
+ console.log('ngOnInit');
+ this.getStuff();
+ }
 
-  ngOnDestroy(): void {
-    if (this.tripUpdateSubscription) {
-      this.tripUpdateSubscription.unsubscribe();
-    }
-  }
+ ngOnDestroy(): void {
+ if (this.tripUpdateSubscription) {
+ this.tripUpdateSubscription.unsubscribe();
+ }
+ }
 }
